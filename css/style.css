@@ -37,6 +37,16 @@ h1, h2, h3, h4, h5, h6 {
     right: 20px;
 }
 
+#left {
+    float: left;
+    margin-left: 7%;
+}
+
+#right {
+    float: right;
+    margin-right: 7%;
+}
+
 #algorithm_panel {
     right: 20px;
     top: 20px;
@@ -76,9 +86,9 @@ button {
     border-radius: 5px;
     font-size: 90%;
     cursor: pointer;
-    padding: 2px 8px;
-    margin: 0 2%;
-    width: 28%;
+    padding: 5px 2px;
+    margin: 0 1%;
+    width: 30%;
 }
 
 button:hover {
@@ -101,9 +111,9 @@ button:hover {
     position: fixed;
     bottom: 40px;
     left: 35px;
-    color: #0a0;
-    font-size: 85%;
-    padding: 5px;
+    color: rgb(8, 8, 8);
+    font-size: 95%;
+    padding: 7px;
     background: rgba(255, 255, 255, 0.5);
     border-radius: 5px;
 }
@@ -113,8 +123,8 @@ a {
 }
 
 footer {
-    color: #333;
-    font-size: 70%;
+    color: rgb(8, 8, 8);
+    font-size: 85%;
     text-align: center;
     position: fixed;
     width: 200px;

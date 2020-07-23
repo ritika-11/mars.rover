@@ -16,22 +16,26 @@ var Panel = {
             $('#instructions_panel').slideUp();
         });
         $('#play_panel').css({
-            top: $algo.offset().top + $algo.outerHeight() + 20
+            top: $algo.offset().top + $algo.outerHeight() + 50
         });
         $('#button2').attr('disabled', 'disabled');
     },
+
     getToggleValue: function() {
-        var toggleValue = typeof $('.togbtn:checked').val() !== 'undefined';
-        console.log(toggleValue);
-        return toggleValue;
-        //typeof $('#switch:checked').val() !== 'undefined' ;
+        var toggleValue = $('input[name=wall_destination]:checked').val();
+        if(toggleValue === 'destination') {
+            return true;
+        }
+        else {
+            return false;
+        }
     },
     /**
      * Get the user selected path-finder.
      * TODO: clean up this messy code.
      */
     getFinder: function() {
-        var finder, selected_header, heuristic, allowDiagonal, biDirectional, dontCrossCorners, weight, trackRecursion, timeLimit;
+        var finder, selected_header, heuristic, allowDiagonal, visualize_recursion;
         
         selected_header = $(
             '#algorithm_panel ' +
@@ -42,149 +46,96 @@ var Panel = {
 
         case 'astar_header':
             this.toggleDisabled = true;
-            console.log(this.toggleDisabled);
             allowDiagonal = typeof $('#astar_section ' +
                                      '.allow_diagonal:checked').val() !== 'undefined';
-                                     console.log(allowDiagonal);
-            // biDirectional = typeof $('#astar_section ' +
-            //                          '.bi-directional:checked').val() !=='undefined';
-            // dontCrossCorners = typeof $('#astar_section ' +
-            //                          '.dont_cross_corners:checked').val() !=='undefined';
-
-            // /* parseInt returns NaN (which is falsy) if the string can't be parsed */
-            // weight = parseInt($('#astar_section .spinner').val()) || 1;
-            // weight = weight >= 1 ? weight : 1; /* if negative or 0, use 1 */
 
             heuristic = $('input[name=astar_heuristic]:checked').val();
-            // if (biDirectional) {
-            //     finder = new PF.BiAStarFinder({
-            //         allowDiagonal: allowDiagonal,
-            //         dontCrossCorners: dontCrossCorners,
-            //         heuristic: PF.Heuristic[heuristic],
-            //         weight: weight
-            //     });
-            // } else {
-                finder = new Pf.AStarFinder({
-                    allowDiagonal: allowDiagonal,
-                    heuristic: Pf.Heuristic[heuristic],
-                });
-            //}
+            finder = new Pf.AStarFinder({
+                allowDiagonal: allowDiagonal,
+                heuristic: Pf.Heuristic[heuristic],
+                multiplePaths:false,
+            });
             break;
 
         case 'breadthfirst_header':
             this.toggleDisabled = false;
             allowDiagonal = typeof $('#breadthfirst_section ' +
                                      '.allow_diagonal:checked').val() !== 'undefined';
-            // biDirectional = typeof $('#breadthfirst_section ' +
-            //                          '.bi-directional:checked').val() !== 'undefined';
-            // dontCrossCorners = typeof $('#breadthfirst_section ' +
-            //                          '.dont_cross_corners:checked').val() !=='undefined';
-            // if (biDirectional) {
-            //     finder = new PF.BiBreadthFirstFinder({
-            //         allowDiagonal: allowDiagonal,
-            //         dontCrossCorners: dontCrossCorners
-            //     });
-            // } else {
-                finder = new Pf.BreadthFirstFinder({
-                    allowDiagonal: allowDiagonal,
-                    dontCrossCorners: dontCrossCorners
-                });
-            //}
+            finder = new Pf.BreadthFirstFinder({
+                allowDiagonal: allowDiagonal,
+                multiplePaths:false,
+            });
             break;
 
         case 'bestfirst_header':
             this.toggleDisabled = false;
             allowDiagonal = typeof $('#bestfirst_section ' +
                                      '.allow_diagonal:checked').val() !== 'undefined';
-            // biDirectional = typeof $('#bestfirst_section ' +
-            //                          '.bi-directional:checked').val() !== 'undefined';
-            // dontCrossCorners = typeof $('#bestfirst_section ' +
-            //                          '.dont_cross_corners:checked').val() !=='undefined';
-            // heuristic = $('input[name=bestfirst_heuristic]:checked').val();
-            // if (biDirectional) {
-            //     finder = new PF.BiBestFirstFinder({
-            //         allowDiagonal: allowDiagonal,
-            //         dontCrossCorners: dontCrossCorners,
-            //         heuristic: PF.Heuristic[heuristic]
-            //     });
-            // } else {
-                finder = new Pf.BestFirstFinder({
-                    allowDiagonal: allowDiagonal,
-                    dontCrossCorners: dontCrossCorners,
-                    heuristic: Pf.Heuristic[heuristic]
-                });
-            //}
+            heuristic = $('input[name=bestfirst_heuristic]:checked').val();
+            finder = new Pf.BestFirstFinder({
+                allowDiagonal: allowDiagonal,
+                heuristic: Pf.Heuristic[heuristic],
+                multiplePaths:false,
+            });
             break;
 
         case 'dijkstra_header':
             this.toggleDisabled = false;
             allowDiagonal = typeof $('#dijkstra_section ' +
                                      '.allow_diagonal:checked').val() !== 'undefined';
-                                     console.log(allowDiagonal);
-            // biDirectional = typeof $('#dijkstra_section ' +
-            //                          '.bi-directional:checked').val() !=='undefined';
-            // dontCrossCorners = typeof $('#dijkstra_section ' +
-            //                          '.dont_cross_corners:checked').val() !=='undefined';
-            // if (biDirectional) {
-            //     finder = new PF.BiDijkstraFinder({
-            //         allowDiagonal: allowDiagonal,
-            //         dontCrossCorners: dontCrossCorners
-            //     });
-            // } else {
-                finder = new Pf.DijkstraFinder({
-                    allowDiagonal: allowDiagonal,
-                    dontCrossCorners: dontCrossCorners
-                });
-            //}
+            finder = new Pf.DijkstraFinder({
+                allowDiagonal: allowDiagonal,
+                multiplePaths:false,
+            });
             break;
 
-        // case 'jump_point_header':
-        //     trackRecursion = typeof $('#jump_point_section ' +
-        //                              '.track_recursion:checked').val() !== 'undefined';
-        //     heuristic = $('input[name=jump_point_heuristic]:checked').val();
-            
-        //     finder = new PF.JumpPointFinder({
-        //       trackJumpRecursion: trackRecursion,
-        //       heuristic: PF.Heuristic[heuristic],
-        //       diagonalMovement: PF.DiagonalMovement.IfAtMostOneObstacle
-        //     });
-        //     break;
-        // case 'orth_jump_point_header':
-        //     trackRecursion = typeof $('#orth_jump_point_section ' +
-        //                              '.track_recursion:checked').val() !== 'undefined';
-        //     heuristic = $('input[name=orth_jump_point_heuristic]:checked').val();
+        case 'thetastar_header':
+            this.toggleDisabled = true;
+            allowDiagonal = typeof $('#thetastar_section ' +
+                                     '.allow_diagonal:checked').val() !== 'undefined';
+            heuristic = $('input[name=thetastar_heuristic]:checked').val();
+            finder = new Pf.ThetaStarFinder({
+                allowDiagonal: allowDiagonal,
+                heuristic: Pf.Heuristic[heuristic],
+            });
+            break;
 
-        //     finder = new PF.JumpPointFinder({
-        //       trackJumpRecursion: trackRecursion,
-        //       heuristic: PF.Heuristic[heuristic],
-        //       diagonalMovement: PF.DiagonalMovement.Never
-        //     });
-        //     break;
         case 'ida_header':
             this.toggleDisabled = true;
             allowDiagonal = typeof $('#ida_section ' +
                                      '.allow_diagonal:checked').val() !== 'undefined';
-            // dontCrossCorners = typeof $('#ida_section ' +
-            //                          '.dont_cross_corners:checked').val() !=='undefined';
-            // trackRecursion = typeof $('#ida_section ' +
-            //                          '.track_recursion:checked').val() !== 'undefined';
+            visualize_recursion = typeof $('#ida_section ' +
+                                     '.visualize_recursion:checked').val() !== 'undefined';
+            heuristic = $('input[name=ida_heuristic]:checked').val();
 
-            // heuristic = $('input[name=jump_point_heuristic]:checked').val();
-
-            // weight = parseInt($('#ida_section input[name=astar_weight]').val()) || 1;
-            // weight = weight >= 1 ? weight : 1; /* if negative or 0, use 1 */
-
-            // timeLimit = parseInt($('#ida_section input[name=time_limit]').val());
-
-            // // Any non-negative integer, indicates "forever".
-            // timeLimit = (timeLimit <= 0 || isNaN(timeLimit)) ? -1 : timeLimit;
+            timeLimit = parseInt($('#ida_section input[name=time_limit]').val());
 
             finder = new Pf.IDAStarFinder({
               allowDiagonal: allowDiagonal,
               heuristic: Pf.Heuristic[heuristic],
+              visualize_recursion:visualize_recursion,
+              timeLimit:timeLimit,
             });
 
             break;
+
+        case 'k_paths_header':
+            this.toggleDisabled = true;
+            allowDiagonal = typeof $('#k_paths_section ' +
+                                     '.allow_diagonal:checked').val() !== 'undefined';
+            visualize_recursion = typeof $('#k_paths_section ' +
+                                     '.visualize_recursion:checked').val() !== 'undefined';
+
+            var paths = $('input[name=NumberOfPaths]:checked').val();
+            finder = new Pf.KShortestPathFinder({
+                allowDiagonal:allowDiagonal,
+                multiplePaths:true,
+                K:paths,
+                visualize_recursion:visualize_recursion
+            });
+            
+            break;
+
         }
 
         return finder;

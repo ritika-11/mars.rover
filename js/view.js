@@ -12,10 +12,12 @@ var View = {
         blocked: {
             fill: 'grey',
             'stroke-opacity': 0.2,
+            opacity:1,
         },
         start: {
             fill: '#0d0',
             'stroke-opacity': 0.2,
+            opacity:1,
         },
         end: {
             fill: 'red',
@@ -23,12 +25,14 @@ var View = {
             opacity: 1,
         },
         opened: {
-            fill: '#98fb98',
+            fill: '#00FA9A',
             'stroke-opacity': 0.2,
+            opacity:1,
         },
         closed: {
             fill: '#afeeee',
             'stroke-opacity': 0.2,
+            opacity:1,
         },
         failed: {
             fill: '#ff8888',
@@ -47,8 +51,16 @@ var View = {
         transform: 's1.2', // scale by 1.2x
         transformBack: 's1.0',
     },
-    pathStyle: {
+    pathStyle1: {
         stroke: 'yellow',
+        'stroke-width': 3,
+    },
+    pathStyle2: {
+        stroke: 'blue',
+        'stroke-width': 3,
+    },
+    pathStyle3: {
+        stroke: 'black',
         'stroke-width': 3,
     },
     supportedOperations: ['opened', 'closed', 'tested'],
@@ -164,7 +176,6 @@ var View = {
         else {
             node = endNodes[gridY][gridX] = this.rects[gridY][gridX].clone();
             node.animate(this.nodeStyle.end, 50);
-            //this.colorizeNode(node, this.nodeStyle.end.fill);
             this.zoomNode(node);
         }
     },
@@ -179,18 +190,15 @@ var View = {
             this.setWalkableAt(gridX, gridY, value);
             break;
         case 'opened':
-            this.rects[gridY][gridX].animate(this.nodeStyle.opened, 100);
-            //this.colorizeNode(this.rects[gridY][gridX], nodeStyle.opened.fill);
+            this.colorizeNode(this.rects[gridY][gridX], nodeStyle.opened.fill);
             this.setCoordDirty(gridX, gridY, true);
             break;
         case 'closed':
-            this.rects[gridY][gridX].animate(this.nodeStyle.closed, 100);
-            //this.colorizeNode(this.rects[gridY][gridX], nodeStyle.closed.fill);
+            this.colorizeNode(this.rects[gridY][gridX], nodeStyle.closed.fill);
             this.setCoordDirty(gridX, gridY, true);
             break;
         case 'tested':
             color = (value === true) ? nodeStyle.tested.fill : nodeStyle.normal.fill;
-
             this.colorizeNode(this.rects[gridY][gridX], color);
             this.setCoordDirty(gridX, gridY, true);
             break;
@@ -269,12 +277,33 @@ var View = {
             }
         }
     },
-    drawPath: function(path) {
+    drawPath: function(path,finderType) {
         if (!path.length) {
             return;
         }
-        var svgPath = this.buildSvgPath(path);
-        this.path = this.paper.path(svgPath).attr(this.pathStyle);
+        this.finderType=finderType;
+        this.paths = new Array();
+        this.path;
+        if(this.finderType == 'KShortestPathFinder') {
+            for(var i=0;i<path.length;i++) {
+                var svgPath = this.buildSvgPath(path[i]);
+                var style;
+                if(i==0)
+                    style = this.pathStyle1;
+                else if(i==1)
+                    style=this.pathStyle2;
+                else if(i==2)
+                    style=this.pathStyle3;
+                        
+                var temp = this.paper.path(svgPath).attr(style);
+                this.paths.push(temp);      
+            }
+        }
+        else {
+            var svgPath = this.buildSvgPath(path);
+            this.path = this.paper.path(svgPath).attr(this.pathStyle1);
+        }      
+
     },
     /**
      * Given a path, build its SVG represention.
@@ -294,6 +323,13 @@ var View = {
     clearPath: function() {
         if (this.path) {
             this.path.remove();
+        }
+        if(this.paths)
+        {
+            for(var i=0;i<this.paths.length;i++)
+           {
+              this.paths[i].remove();   
+           }
         }
     },
     /**

@@ -27,70 +27,6 @@
     <script type="text/javascript" src="./js/controller.js"></script>
     <script type="text/javascript" src="./js/panel.js"></script>
     <script type="text/javascript" src="./js/main.js"></script>
-    <style>
-      .switch {
-        position: relative;
-        display: inline-block;
-        margin-left: 10px;
-        margin-right: 10px;
-        width: 50px;
-        height: 27px;
-      }
-      
-      .switch input { 
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        -webkit-transition: .4s;
-        transition: .4s;
-      }
-      
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 20px;
-        width: 20px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        -webkit-transition: .4s;
-        transition: .4s;
-      }
-      
-      input:checked + .slider {
-        background-color: #FF0000;
-      }
-      
-      input:focus + .slider {
-        box-shadow: 0 0 1px #FF0000;
-      }
-      
-      input:checked + .slider:before {
-        -webkit-transform: translateX(25px);
-        -ms-transform: translateX(22px);
-        transform: translateX(22px);
-      }
-      
-      /* Rounded sliders */
-      .slider.round {
-        border-radius: 34px;
-      }
-      
-      .slider.round:before {
-        border-radius: 50%;
-      }
-      
-      </style>
       <!-- <style>
         body, html {
           height: 100%;
@@ -99,7 +35,7 @@
 
         .bg {
           /* The image used */
-          background-image: url("https://st2.depositphotos.com/7671398/10659/i/950/depositphotos_106592906-stock-photo-red-planet-mars-texture.jpg");
+          background-image: url("https://lh3.googleusercontent.com/proxy/jK-NDGJ8QXVrar6_22JH7gFROrJP-1ZdUejADMMp7_7wLQ10CqDHvjhwGYSIqEvvk_LE9kerFvp01JkaeeNJrtQZ7mpT4HpSjn67QQ");
 
           /* Full height */
           height: 100%; 
@@ -113,29 +49,35 @@
       </style> -->
   </head>
   <body>
-    <div id="draw_area" ></div>
+    <div class=bg id="draw_area" ></div>
 
     <div id="graph" class="w3-modal">
-      <div style="width: 500px; height:500px"class="w3-modal-content">
+      <div id='left' style="width: 720px; height:500px; padding-left: 20px;padding-right:20px"class="w3-modal-content">
           <button onclick="document.getElementById('graph').style.display='none'"style="height:50px;width:50px">X</button>
-        <div id="chartContainer" ></div>
+        <div id="chartContainer1" ></div>
+      </div>
+       <div id='right' style="width: 720px; height:500px; padding-left: 20px;padding-right:20px;"class="w3-modal-content">
+          <button onclick="document.getElementById('graph').style.display='none'"style="height:50px;width:50px">X</button>
+        <div id="chartContainer2" ></div>
       </div>
     </div>
 
-    <div id="instructions_panel" class="panel">
+
+    <div id="instructions_panel" class="panel" style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; font-size: medium;">
       <header>
         <h2 class="header_title">Instructions</h2>
         <span id="hide_instructions">hide</span>
       </header>
       Click within the <span class="white">white</span> grid and drag your mouse to draw obstacles. <br>
       Drag the <span class="green">green</span> node to set the start position. <br>
-      Toggle the switch <span class="red">red</span> to set the end positions. <br>
+      Choose the option <span class="red">Add Destination</span> to set the end positions. <br>
       Choose an algorithm from the right-hand panel. <br>
-      Click Start Search in the lower-right corner to start the animation.
+      Click Start Search in the lower-right corner to start the animation.<br>
+      Give a set of obstacles and press compare button to compare algorithms.<br>
     </div>
 
     <div id="algorithm_panel" class="panel right_panel">
-      <header><h2 class="header_title">Select Algorithm</h2></header>
+      <header><h2 class="header_title">Select an Algorithm</h2></header>
 
       <div class="accordion">
         <h3 id="astar_header"><a href="#">A*</a></h3>
@@ -155,13 +97,7 @@
           </header>
           <div class="optional sub_options">
             <input type="checkbox" class="allow_diagonal" checked>
-            <label class="option_label">Allow Diagonal</label> <br> <br> <br>
-            <!-- <input type="checkbox" class="bi-directional">
-            <label class="option_label">Bi-directional</label> <br>
-            <input type="checkbox" class="dont_cross_corners">
-            <label class="option_label">Don't Cross Corners</label> <br>
-            <input class="spinner" name="astar_weight" value="1">
-            <label class="option_label">Weight</label> <br> -->
+            <label class="option_label">Allow Diagonal</label> <br> <br> <br> <br>
           </div>
         </div>
 
@@ -171,8 +107,11 @@
             <h6>Heuristic</h6>
           </header>
           <div id="ida_heuristic" class="sub_options">
-            <input type="radio" name="ida_heuristic" value="euclidean" checked/>
+            <input type="radio" name="ida_heuristic" value="manhattan" checked/>
+            <label class="option_label">Manhattan</label> <br>
+            <input type="radio" name="ida_heuristic" value="euclidean" />
             <label class="option_label">Euclidean</label> <br>
+           
             
           </div>
           <header class="option_header">
@@ -180,15 +119,11 @@
           </header>
           <div class="optional sub_options">
             <input type="checkbox" class="allow_diagonal" checked>
-            <label class="option_label">Allow Diagonal</label> <br> <br>
-            <!-- <input type="checkbox" class="dont_cross_corners">
-            <label class="option_label">Don't Cross Corners</label> <br>
-            <input class="spinner" name="astar_weight" value="1">
-            <label class="option_label">Weight</label> <br>
-            <input class="spinner" name="time_limit" value="10">
+            <label class="option_label">Allow Diagonal</label> <br>
+            <input type="checkbox" class="visualize_recursion" checked>
+            <label class="option_label">Visualize Recursion</label> <br> <br>
+            <input class="spinner" name="time_limit" value="15">
             <label class="option_label">Seconds limit</label> <br>
-            <input type="checkbox" class="track_recursion" checked />
-            <label class="option_label">Visualize recursion</label> <br> -->
           </div>
         </div>
 
@@ -199,11 +134,10 @@
           </header>
           <div class="optional sub_options">
             <input type="checkbox" class="allow_diagonal" checked>
-            <label class="option_label">Allow Diagonal</label> <br> <br>
-            <!-- <input type="checkbox" class="bi-directional">
-            <label class="option_label">Bi-directional</label> <br>
-            <input type="checkbox" class="dont_cross_corners">
-            <label class="option_label">Don't Cross Corners</label> <br> -->
+            <label class="option_label">Allow Diagonal</label>
+          </div>
+          <div>
+          <p style="text-align:center;">Try adding multiple end points.</p>
           </div>
         </div>
 
@@ -228,11 +162,10 @@
           </header>
           <div class="optional sub_options">
             <input type="checkbox" class="allow_diagonal" checked>
-            <label class="option_label">Allow Diagonal</label> <br>
-            <!-- <input type="checkbox" class="bi-directional">
-            <label class="option_label">Bi-directional</label> <br>
-            <input type="checkbox" class="dont_cross_corners">
-            <label class="option_label">Don't Cross Corners</label> <br> -->
+            <label class="option_label">Allow Diagonal</label> <br> <br>
+          </div>
+          <div style="text-align:center;">
+            Try adding multiple end points.
           </div>
         </div>
 
@@ -243,84 +176,56 @@
           </header>
           <div class="optional sub_options">
             <input type="checkbox" class="allow_diagonal" checked>
-            <label class="option_label">Allow Diagonal</label> <br> <br>
-            <!-- <input type="checkbox" class="bi-directional">
-            <label class="option_label">Bi-directional</label> <br>
-            <input type="checkbox" class="dont_cross_corners">
-            <label class="option_label">Don't Cross Corners</label> <br> -->
+            <label class="option_label">Allow Diagonal</label>
+          </div>
+          <div>
+            <p style="text-align:center;">Try adding multiple end points.</p>
+            </div>
+        </div>
+
+        <h3 id="thetastar_header"><a href="#">Theta*</a></h3>
+        <div id="thetastar_section" class="finder_section">
+          <header class="option_header">
+            <h6>Heuristic</h6>
+          </header>
+          <div id="thetastar_heuristic" class="sub_options">
+            <input type="radio" name="thetastar_heuristic" value="manhattan" checked />
+            <label class="option_label">Manhattan</label> <br>
+            <input type="radio" name="thetastar_heuristic" value="euclidean"/>
+            <label class="option_label">Euclidean</label> <br>
+          </div>
+          <header class="option_header">
+            <h6>Options</h6>
+          </header>
+          <div class="optional sub_options">
+            <input type="checkbox" class="allow_diagonal" checked>
+            <label class="option_label">Allow Diagonal</label> <br> <br> <br>
           </div>
         </div>
 
-        <!-- <h3 id="jump_point_header"><a href="#">Jump Point Search</a></h3>
-        <div id="jump_point_section" class="finder_section">
+        <h3 id="k_paths_header"><a href="#">KShortestPaths</a></h3>
+        <div id="k_paths_section" class="finder_section">
           <header class="option_header">
-            <h3>Heuristic</h3>
+            <h6>Number of Paths</h6>
           </header>
-          <div id="jump_point_heuristic" class="sub_options">
-            <input type="radio" name="jump_point_heuristic" value="manhattan" checked />
-            <label class="option_label">Manhattan</label> <br>
-            <input type="radio" name="jump_point_heuristic" value="euclidean"/>
-            <label class="option_label">Euclidean</label> <br>
-            <input type="radio" name="jump_point_heuristic" value="octile"/>
-            <label class="option_label">Octile</label> <br>
-            <input type="radio" name="jump_point_heuristic" value="chebyshev"/>
-            <label class="option_label">Chebyshev</label> <br>
+          <div id="KShortestPaths" class="sub_options">
+            <input type="radio" name="NumberOfPaths" value="1"/>
+            <label class="option_label">1</label> <br>
+            <input type="radio" name="NumberOfPaths" value="2"/>
+            <label class="option_label">2</label> <br>
+            <input type="radio" name="NumberOfPaths" value="3" checked/>
+            <label class="option_label">3</label> <br> 
           </div>
           <header class="option_header">
-            <h3>Options</h3>
+            <h6>Options</h6>
           </header>
           <div class="optional sub_options">
-            <input type="checkbox" class="track_recursion" checked>
-            <label class="option_label">Visualize recursion</label> <br>
+             <input type="checkbox" class="allow_diagonal" checked>
+            <label class="option_label">Allow Diagonal</label> <br>
+            <input type="checkbox" class="visualize_recursion" checked>
+            <label class="option_label">Visualize Recursion</label> <br>
           </div>
         </div>
-
-	      <h3 id="orth_jump_point_header"><a href="#">Orthogonal Jump Point Search</a></h3>
-        <div id="orth_jump_point_section" class="finder_section">
-          <header class="option_header">
-            <h3>Heuristic</h3>
-          </header>
-          <div id="orth_jump_point_heuristic" class="sub_options">
-            <input type="radio" name="orth_jump_point_heuristic" value="manhattan" checked />
-            <label class="option_label">Manhattan</label> <br>
-            <input type="radio" name="orth_jump_point_heuristic" value="euclidean"/>
-            <label class="option_label">Euclidean</label> <br>
-            <input type="radio" name="orth_jump_point_heuristic" value="octile"/>
-            <label class="option_label">Octile</label> <br>
-            <input type="radio" name="orth_jump_point_heuristic" value="chebyshev"/>
-            <label class="option_label">Chebyshev</label> <br>
-          </div>
-          <header class="option_header">
-            <h3>Options</h3>
-          </header>
-          <div class="optional sub_options">
-            <input type="checkbox" class="track_recursion" checked>
-            <label class="option_label">Visualize recursion</label> <br>
-          </div>
-        </div>
-        <h3 id="orth_jump_point_header"><a href="#">Orthogonal Jump Point Search</a></h3>
-        <div id="orth_jump_point_section" class="finder_section">
-          <header class="option_header">
-            <h3>Heuristic</h3>
-          </header>
-          <div id="orth_jump_point_heuristic" class="sub_options">
-            <input type="radio" name="orth_jump_point_heuristic" value="manhattan" checked />
-            <label class="option_label">Manhattan</label> <br>
-            <input type="radio" name="orth_jump_point_heuristic" value="euclidean"/>
-            <label class="option_label">Euclidean</label> <br>
-            <input type="radio" name="orth_jump_point_heuristic" value="octile"/>
-            <label class="option_label">Octile</label> <br>
-            <input type="radio" name="orth_jump_point_heuristic" value="chebyshev"/>
-            <label class="option_label">Chebyshev</label> <br>
-          </div>
-          <header class="option_header">
-            <h3>Options</h3>
-          </header>
-          <div class="optional sub_options">
-            <input type="checkbox" class="track_recursion" checked>
-            <label class="option_label">Visualize recursion</label> <br>
-          </div>
-        </div> -->
 
       </div><!-- .accordion -->
     </div><!-- #algorithm_panel -->
@@ -329,13 +234,15 @@
       <button id="button1" class="control_button">Start Search</button>
       <button id="button2" class="control_button">Pause Search</button>
       <button id="button3" class="control_button">Clear Walls</button> <br> <br>
-      <label class="toggle_label">Wall</label>
-      <label class="switch">
-        <input type="checkbox" id="toggle" class="togbtn">
-        <span class="slider round"></span>
-      </label>
-      <label class="toggle_label1">Destination</label> <br> <br>
-      <button id="button4" class="control_button">Compare</button>
+      <div id="wall_destination" class="sub_options">
+        <input type="radio" name="wall_destination" value="wall" checked />
+        <label class="option_label">Add Wall</label> <br>
+        <input type="radio" name="wall_destination" value="destination"/>
+        <label class="option_label">Add Destination</label> <br> <br>
+      </div>
+      <button id="button4" class="control_button"style="width:98.5px;">Compare Algorithms</button>
+      <button id="button5" onclick="displayInstructions()"style="width:98.5px;"class="control_button">Show Instructions</button>
+
     </div>
 
     <div id="stats"></div>
@@ -343,6 +250,11 @@
     <footer>
       Project Hosted on <a href="https://github.com/ritika-11/PathFinder">Github</a>
     </footer>
-
+    <script>
+      
+      function displayInstructions() {
+        document.getElementById('instructions_panel').style.display='block';
+      }
+    </script> 
   </body>
 </html>

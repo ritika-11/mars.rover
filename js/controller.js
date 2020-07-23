@@ -92,6 +92,11 @@ var Controller = StateMachine.create({
             from: ['ready', 'finished','modified','paused'],
             to:   'ready'
         },
+        {
+            name: 'dummy',
+            from: ['ready', 'finished','modified','paused'],
+            to:   'ready'
+        },
     ],
 });
 
@@ -140,19 +145,25 @@ $.extend(Controller, {
 
         timeStart = window.performance ? performance.now() : Date.now();
         grid = this.grid.clone();
+
         if(this.end.length<1) {
             alert("Please give atleast one end point.");
             return;
         }
+
         if(Panel.toggleDisabled) {
             while(this.end.length>1) {
                 View.setEndPos1(this.end[1].x, this.end[1].y);
                 this.end.splice(1, 1);
             }
         }
+       
         this.path = finder.findPath(
             this.startX, this.startY, this.end[0].x, this.end[0].y, grid, this.end
         );
+       
+        this.finderType =finder.constructor.name;
+
         this.operationCount = this.operations.length;
         timeEnd = window.performance ? performance.now() : Date.now();
         this.timeSpent = (timeEnd - timeStart).toFixed(4);
@@ -160,7 +171,6 @@ $.extend(Controller, {
         this.loop();
         // => searching
     },
-    //[{x:this.endX, y:this.endY}, {x:this.ritika, y:this.rutuja}]
     onrestart: function() {
         // When clearing the colorized nodes, there may be
         // nodes still animating, which is an asynchronous procedure.
@@ -192,7 +202,9 @@ $.extend(Controller, {
             timeSpent:  this.timeSpent,
             operationCount: this.operationCount,
         });
-        View.drawPath(this.path);
+     
+         View.drawPath(this.path,this.finderType);
+         
         // => finished
     },
     onclear: function(event, from, to) {
@@ -213,28 +225,39 @@ $.extend(Controller, {
     },
     oncompare:function()
     {
+        if(this.end.length<1) {
+            alert("Please give atleast one end point.");
+            return;
+        }
+        while(this.end.length>1) {
+            View.setEndPos1(this.end[1].x, this.end[1].y);
+            this.end.splice(1, 1);
+        }
+
         var gridCopyAStar = this.grid.clone();
         var gridCopyBestFirst = this.grid.clone();
         var gridCopyBreadthFirst = this.grid.clone();
         var gridCopyDijkstra = this.grid.clone();
+        var gridCopyThetaStar = this.grid.clone();
 
         var finderAStar = new Pf.AStarFinder({comparison:true});
         var finderBestFirst = new Pf.BestFirstFinder({comparison:true});
         var finderBreadthFirst = new Pf.BreadthFirstFinder({comparison:true});
         var finderDijkstra = new Pf.DijkstraFinder({comparison:true});
+        var finderThetaStar = new Pf.ThetaStarFinder({comparison:true});
 
         var operationsAStar = finderAStar.findPath(this.startX,this.startY,this.end[0].x,this.end[0].y,gridCopyAStar);
         var operationsBestFirst = finderBestFirst.findPath(this.startX,this.startY,this.endX,this.endY,gridCopyBestFirst,this.end);
         var operationsBreadthFirst = finderBreadthFirst.findPath(this.startX,this.startY,this.endX,this.endY,gridCopyBreadthFirst,this.end);
         var operationsDijkstra = finderDijkstra.findPath(this.startX,this.startY,this.endX,this.endY,gridCopyDijkstra,this.end);
-        
+        var operationsThetaStar = finderThetaStar.findPath(this.startX,this.startY,this.end[0].x,this.end[0].y,gridCopyThetaStar);
+
         Controller.clearOperations();
         Controller.clearFootprints();
 
-    this.displayGraph(operationsAStar,operationsBestFirst,operationsBreadthFirst,operationsDijkstra);
-
+        this.displayGraph(operationsAStar,operationsBestFirst,operationsBreadthFirst,operationsDijkstra,operationsThetaStar);
+        // => ready
     },
-
 
     /**
      * The following functions are called on entering states.
@@ -258,7 +281,7 @@ $.extend(Controller, {
             callback: $.proxy(this.reset, this),
         },{
             id: 4,
-            text: 'Compare',
+            text: 'Compare Algorithms',
             enabled: true,
             callback: $.proxy(this.compare, this),
         });
@@ -305,7 +328,7 @@ $.extend(Controller, {
         },
          {
             id: 4,
-            text: 'Compare',
+            text: 'Compare Algorithms',
             enabled: true,
             callback: $.proxy(this.compare, this),
         });
@@ -326,7 +349,7 @@ $.extend(Controller, {
         },
          {
             id: 4,
-            text: 'Compare',
+            text: 'Compare Algorithms',
             enabled: true,
             callback: $.proxy(this.compare, this),
         });
@@ -346,7 +369,7 @@ $.extend(Controller, {
         },
          {
             id: 4,
-            text: 'Compare',
+            text: 'Compare Algorithms',
             enabled: true,
             callback: $.proxy(this.compare, this),
         });
@@ -449,7 +472,6 @@ $.extend(Controller, {
             gridX = coord[0],
             gridY = coord[1],
             grid  = this.grid;
-        console.log(Panel.toggleDisabled);
 
         if (this.can('dragStart') && this.isStartPos(gridX, gridY)) {
             this.dragStart();
@@ -539,11 +561,10 @@ $.extend(Controller, {
         var width, height,
             marginRight, availWidth,
             centerX, centerY,
-            endX, endY,
             nodeSize = View.nodeSize;
 
-        width  = $(window).width();
-        height = $(window).height();
+        width  = this.gridSize[0] * nodeSize;
+        height = this.gridSize[1] * nodeSize;
 
         marginRight = $('#algorithm_panel').width();
         availWidth = width - marginRight;
@@ -551,13 +572,12 @@ $.extend(Controller, {
         centerX = Math.ceil(availWidth / 2 / nodeSize);
         centerY = Math.floor(height / 2 / nodeSize);
 
-        this.setStartPos(centerX - 5, centerY);
-        this.setEndPos(centerX + 5, centerY);
-        //View.setEndPos1(centerX + 10, centerY);
+        this.setStartPos(centerX - 5, centerY - 3);
+        this.setEndPos(centerX + 5, centerY - 3);
         if(!this.end) {
             this.end = [];
         }
-        this.end.push({x:centerX + 5, y:centerY});
+        this.end.push({x:centerX + 5, y:centerY - 3});
     },
     setStartPos: function(gridX, gridY) {
         this.startX = gridX;
@@ -582,7 +602,6 @@ $.extend(Controller, {
     isEnd: function(gridX, gridY) {
         for(var q=0;q<this.end.length;q++) {
             if((this.end[q].x === gridX) && (this.end[q].y === gridY)) {
-                console.log('ritika');
                 return q;
             }
         }
@@ -591,34 +610,70 @@ $.extend(Controller, {
     isStartOrEndPos: function(gridX, gridY) {
         return this.isStartPos(gridX, gridY) || this.isEndPos(gridX, gridY);
     },
-    displayGraph: function(a,b,c,d)
-    {
-           var chart = new CanvasJS.Chart("chartContainer", {
-        animationEnabled: true,
-         theme: "light2",
-          title:{
-        text: "Algorithm Comparison"
-          },
-         axisY:{
-        includeZero: true,
-        title:'No of Operations'
-          },
-          axisX:{
-        title:'Algorithm used'
-          },
-        data: [{        
-        type: "column",
-        indexLabelFontSize: 16,
-        dataPoints: [
-            { y: a, label:'AStarFinder'},
-            { y: b, label:'Best First Search'},
-            { y: c, label:'Breadth First Search' },
-            { y: d, label:'Dijkstra' },
-        ]
-       }]
-      });
-      chart.render();
-      document.getElementById('graph').style.display='block';
+    displayGraph: function(a,b,c,d,e) {
+        var chart1 = new CanvasJS.Chart("chartContainer1", {
+            animationEnabled: true,
+            theme: "light2",
+            width:700,
+            title:{
+                text: "Algorithm Comparison"
+            },
+            axisY:{
+                includeZero: true,
+                title:'No of Operations'
+            },
+            axisX:{
+                title:'Algorithm'
+            },
+            data: [{        
+                type: "column",
+                indexLabelFontSize: 16,
+                dataPoints: [
+                    { y: a.ops, label:'AStarFinder'},
+                    { y: b.ops, label:'Best First Search' },
+                    { y: c.ops, label:'Breadth First Search' },
+                    { y: d.ops, label:'Dijkstra' },
+                    { y: e.ops, label:'Theta*' },
+                ]
+            }]
+        });
+
+        var lengthAStar = Pf.Util.pathLength(a.path);
+        var lengthBestFirstSearch = Pf.Util.pathLength(b.path);
+        var lengthBreadthSearch = Pf.Util.pathLength(c.path);
+        var lengthDijkstra = Pf.Util.pathLength(d.path);
+        var lengthThetaStar = Pf.Util.pathLength(e.path);
+
+        var chart2 = new CanvasJS.Chart("chartContainer2", {
+            animationEnabled: true,
+            theme: "light2",
+            width:700,
+            title:{
+                text: "Algorithm Comparison"
+            },
+            axisY:{
+                includeZero: true,
+                title:'PathLength'
+            },
+            axisX:{
+                title:'Algorithm'
+            },
+            data: [{        
+                type: "column",
+                indexLabelFontSize: 16,
+                dataPoints: [
+                    { y: lengthAStar, label:'AStarFinder'},
+                    { y: lengthBestFirstSearch, label:'Best First Search'},
+                    { y: lengthBreadthSearch, label:'Breadth First Search' },
+                    { y: lengthDijkstra, label:'Dijkstra' },
+                    { y: lengthThetaStar, label:'Theta*' },
+                ]
+            }]
+        });
+
+        chart1.render();
+        chart2.render();
+        document.getElementById('graph').style.display='block';
     }
 
 });
